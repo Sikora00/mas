@@ -14,7 +14,12 @@
     "default": {
       "runner": "@nrwl/workspace/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ]
       }
     }
   },
@@ -24,13 +29,39 @@
     },
     "twoj-dj-e2e": {
       "tags": [],
-      "implicitDependencies": ["twoj-dj"]
+      "implicitDependencies": [
+        "twoj-dj"
+      ]
     },
     "api": {
       "tags": []
     },
     "api-interfaces": {
       "tags": []
+    },
+    "server-core-domain": {
+      "tags": [
+        "platform:server",
+        "type:domain"
+      ]
+    },
+    "server-core-domain-services": {
+      "tags": [
+        "platform:server",
+        "type:domain-services"
+      ]
+    },
+    "server-core-application-services": {
+      "tags": [
+        "platform:server",
+        "type:application-services"
+      ]
+    },
+    "server-ui-api": {
+      "tags": [
+        "platform:server",
+        "type:ui"
+      ]
     }
   }
 }
