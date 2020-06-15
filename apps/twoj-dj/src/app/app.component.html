@@ -1,8 +1,28 @@
-<div style="text-align: center;">
-  <h1>Welcome to twoj-dj!</h1>
-  <img
-    width="450"
-    src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png"
-  />
-</div>
-<div>Message: {{ hello$ | async | json }}</div>
+<mas-navbar
+  (navigateToRoom)="onNavigateToRoom($event)"
+  (toggleSidebar)="onToggleMenu()"
+></mas-navbar>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav class="sidenav" [opened]="sidebarOpened" [mode]="'over'">
+    <mas-rooms-menu
+      [rooms]="rooms$ | async"
+      [selectedRoom]="selectedRoom$ | async"
+      (selectRoom)="onSelectRoom($event)"
+    ></mas-rooms-menu>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="app-content">
+      <sdj-awesome-player
+        #playerComponent
+        [externalRadio]="selectedExternalRadio$ | async"
+        [src]="audioSrc$ | async"
+        [room]="selectedRoom$"
+      >
+      </sdj-awesome-player>
+      <router-outlet></router-outlet>
+      <mas-action-menu
+        (changeExternalRadioStation)="onChangeExternalRadio()"
+      ></mas-action-menu>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

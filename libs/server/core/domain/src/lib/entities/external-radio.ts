@@ -1,13 +1,26 @@
-import { User } from "./user";
-import { Identifiable } from "../interfaces/identifiable";
-import { Uuid } from "../value-objects/uuid";
+import { User } from './user';
+import { Identifiable } from '../interfaces/identifiable';
+import { Uuid } from '../value-objects/uuid';
 
 export class ExternalRadio implements Identifiable<ExternalRadio> {
   private id: string;
   private name: string;
-  private logo: URL;
-  private address: URL;
-  private selectedBy: User[]
+  private logo: string;
+  private address: string;
+  private selectedBy: Promise<User[]>;
+
+  private constructor() {
+  }
+
+  static create(name: string, logo: URL, address: URL): ExternalRadio {
+    const instance = new ExternalRadio();
+    instance.id = Uuid.random().toString();
+    instance.name = name;
+    instance.logo = logo.toString();
+    instance.address = address.toString();
+    instance.selectedBy = Promise.resolve([]);
+    return instance;
+  }
 
   equals(externalRadio: ExternalRadio): boolean {
     return externalRadio.getId().equals(this.getId());
@@ -17,13 +30,22 @@ export class ExternalRadio implements Identifiable<ExternalRadio> {
     return Uuid.fromString(this.id);
   }
 
-  getMusicResource(): URL {
-    return this.address;
+  getLogoUrl(): URL {
+    return new URL(this.logo)
   }
 
-  select(user: User): void {
-    if (!!this.selectedBy.find(u => u.equals(user))) {
-      this.selectedBy.push(user);
+  getMusicResource(): URL {
+    return new URL(this.address);
+  }
+
+  getName(): string {
+    return this.name;
+  }
+
+  async select(user: User): Promise<void> {
+    const selectedBy = await this.selectedBy;
+    if (!!selectedBy.find((u) => u.equals(user))) {
+      selectedBy.push(user);
       user.selectExternalRadio(this);
     }
   }

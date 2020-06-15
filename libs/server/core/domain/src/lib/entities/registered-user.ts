@@ -1,41 +1,56 @@
-import { User } from "./user";
-import { Moderator } from "./moderator";
-import { Room } from "./room";
+import { User } from './user';
+import { Room } from './room';
+import { Uuid } from '../..';
 
 export class RegisteredUser extends User {
   private login: string;
   private password: string;
   private previousPasswords: string[];
-  private savedRooms: Room[]
+  private savedRooms: Promise<Room[]>;
 
-  static register(login: string, password: string): RegisteredUser {
+  static register(
+    id: Uuid,
+    name: string,
+    login: string,
+    password: string
+  ): RegisteredUser {
     const instance = new RegisteredUser();
+    instance.id = id.toString();
+    instance.name = name;
+    instance.isActive = true;
+    instance.queued = [];
+    instance.wantsToListenMusic = false;
     instance.login = login;
     instance.password = password;
     instance.previousPasswords = [password];
     return instance;
   }
 
-  appointModerator(): Moderator {
+  getSavedRooms(): Promise<Room[]> {
+    return this.savedRooms;
+  }
+
+  appointModerator() {
+    const Moderator = require('./moderator').Moderator;
     return Moderator.createFromRegisteredUser(this);
   }
 
   changePassword(newPassword: string): void {
-    if(this.previousPasswords.includes(newPassword)) {
+    if (this.previousPasswords.includes(newPassword)) {
       const oldPassword = this.password;
       this.password = newPassword;
-      if(this.previousPasswords.length === 3) {
+      if (this.previousPasswords.length === 3) {
         this.previousPasswords.shift();
       }
       this.previousPasswords.push(oldPassword);
     }
   }
 
-  save(room: Room): void {
-    if(!this.savedRooms.find(r => r.equals(room))) {
-      this.savedRooms.push(room);
-      room.saveByUser(this)
+  async save(room: Room): Promise<void> {
+    const savedRooms = await this.savedRooms;
+    if (!savedRooms.find((r) => r.equals(room))) {
+      savedRooms.push(room);
+      room.saveByUser(this);
     }
   }
 }
-

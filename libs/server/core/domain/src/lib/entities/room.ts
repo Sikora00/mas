@@ -1,16 +1,16 @@
-import { Identifiable } from "../interfaces/identifiable";
-import { Uuid } from "../value-objects/uuid";
-import { User } from "./user";
-import { RegisteredUser } from "./registered-user";
-import { Moderator } from "./moderator";
-import { QueuedSong } from "./queued-song";
-import { Song } from "./song";
-import { Playlist } from "./playlist";
+import { Identifiable } from '../interfaces/identifiable';
+import { Uuid } from '../value-objects/uuid';
+import { User } from './user';
+import { RegisteredUser } from './registered-user';
+import { Moderator } from './moderator';
+import { QueuedSong } from './queued-song';
+import { Song } from './song';
+import { Playlist } from './playlist';
 
 export class Room implements Identifiable<Room> {
   private static readonly startQueueOwnSongs = 50;
 
-  private address: URL;
+  private address: string;
   private currentSong?: QueuedSong;
   private id: string;
   private moderators: Moderator[];
@@ -19,8 +19,22 @@ export class Room implements Identifiable<Room> {
   private savedFor: RegisteredUser[];
   private usersInRoom: User[];
 
+  private constructor() {}
+
+  static create(id: Uuid, name: string, createdBy: RegisteredUser): Room {
+    const instance = new Room();
+    instance.id = id.toString();
+    instance.name = name;
+    instance.address = 'http://localhost:3333/stream/' + instance.id;
+    instance.moderators = [createdBy.appointModerator()];
+    instance.queue = [];
+    instance.savedFor = [];
+    instance.usersInRoom = [];
+    return instance;
+  }
+
   addModerator(moderator: Moderator): void {
-    if (!this.moderators.find(m => m.equals(moderator))) {
+    if (!this.moderators.find((m) => m.equals(moderator))) {
       this.moderators.push(moderator);
       moderator.moderate(this);
     }
@@ -32,7 +46,7 @@ export class Room implements Identifiable<Room> {
   }
 
   assignQueueItem(queuedSong: QueuedSong): void {
-    if (!this.queue.find(queueItem => queueItem.equals(queuedSong))) {
+    if (!this.queue.find((queueItem) => queueItem.equals(queuedSong))) {
       this.queue.push(queuedSong);
     }
   }
@@ -46,7 +60,11 @@ export class Room implements Identifiable<Room> {
   }
 
   getMusicResource(): URL {
-    return new URL(`localhost:3333/stream/channel/${this.id}`)
+    return new URL(`localhost:3333/stream/channel/${this.id}`);
+  }
+
+  getName(): string {
+    return this.name;
   }
 
   goToTheNextSong(): void {
@@ -58,27 +76,27 @@ export class Room implements Identifiable<Room> {
   }
 
   join(user: User): void {
-    if (!this.usersInRoom.find(u => u.equals(user))) {
+    if (!this.usersInRoom.find((u) => u.equals(user))) {
       this.usersInRoom.push(user);
       user.join(this);
     }
   }
 
   kickUser(user: User): void {
-    if (this.usersInRoom.find(u => u.equals(user))) {
-      this.usersInRoom.filter(u => !u.equals(user));
+    if (this.usersInRoom.find((u) => u.equals(user))) {
+      this.usersInRoom.filter((u) => !u.equals(user));
       user.kickFromRoom();
     }
   }
 
   queuePlaylist(playlist: Playlist, by: RegisteredUser): void {
-    playlist.getAllSongs().forEach(song => {
+    playlist.getAllSongs().forEach((song) => {
       this.addToQueue(song, by);
-    })
+    });
   }
 
   saveByUser(user: RegisteredUser): void {
-    if (!this.savedFor.find(u => u.equals(user))) {
+    if (!this.savedFor.find((u) => u.equals(user))) {
       this.savedFor.push(user);
       user.save(this);
     }

@@ -1,0 +1,26 @@
+<mat-nav-list>
+  <mat-list-item
+    class="rooms-list"
+    [ngStyle]="
+      selectedRoom &&
+      room.id === selectedRoom.id && { backgroundColor: '#b3e5fc' }
+    "
+    (click)="onSelectRoom(room)"
+    routerLinkActive="list-item-active"
+    *ngFor="let room of rooms"
+  >
+    <mat-icon
+      mat-list-icon
+      *ngIf="
+        selectedRoom && room.id === selectedRoom.id;
+        else notSelectedRoomIcon
+      "
+      >star
+    </mat-icon>
+    <h4 mat-line>{{ room.name }}</h4>
+  </mat-list-item>
+</mat-nav-list>
+
+<ng-template #notSelectedRoomIcon>
+  <mat-icon mat-list-icon>star_border </mat-icon>
+</ng-template>

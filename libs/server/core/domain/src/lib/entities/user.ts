@@ -1,24 +1,23 @@
-import { Identifiable } from "../interfaces/identifiable";
-import { Uuid } from "../value-objects/uuid";
-import { ExternalRadio } from "./external-radio";
-import { Room } from "./room";
-import { QueuedSong } from "./queued-song";
+import { Identifiable } from '../interfaces/identifiable';
+import { Uuid } from '../value-objects/uuid';
+import { ExternalRadio } from './external-radio';
+import { Room } from './room';
+import { QueuedSong } from './queued-song';
 
 export abstract class User implements Identifiable<User> {
-  private id: string;
-  private isActive: boolean;
-  private name: string;
-  private queued: QueuedSong[];
-  private selectedExternalRadio?: ExternalRadio;
-  private selectedRoom?: Room;
-  private wantsToListenMusic: boolean;
+  protected id: string;
+  protected isActive: boolean;
+  protected name: string;
+  protected queued: QueuedSong[];
+  protected selectedExternalRadio?: ExternalRadio;
+  protected selectedRoom?: Room;
+  protected wantsToListenMusic: boolean;
 
-  get currentMusicResource(): URL {
-
-  }
+  // @ts-ignore
+  get currentMusicResource(): URL {}
 
   addedToQueue(queuedSong: QueuedSong): void {
-    if (!this.queued.find(queuedItem => queuedItem.equals(queuedSong))) {
+    if (!this.queued.find((queuedItem) => queuedItem.equals(queuedSong))) {
       this.queued.push(queuedSong);
     }
   }

@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Choose a radio for you</h2>
+<mat-dialog-content>
+  <div class="radio-stations">
+    <div *ngFor="let externalRadio of externalRadios">
+      <button
+        class="radio-stations-radio"
+        (click)="select(externalRadio)"
+        mat-button
+      >
+        <img
+          class="radio-stations-radio__icon"
+          [src]="externalRadio.logo"
+          [alt]="externalRadio.name"
+        />
+      </button>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button cdkFocusInitial mat-dialog-close>Cancel</button>
+</mat-dialog-actions>
