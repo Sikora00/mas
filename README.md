@@ -1,5 +1,7 @@
 # Mas
 
+`docker run --name twoj-dj-db -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=twoj-dj -p 5432:5432 -d postgres`
+
 This project was generated using [Nx](https://nx.dev).
 
 <p align="center"><img src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png" width="450"></p>

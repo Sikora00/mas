@@ -1,8 +1,8 @@
-import { QueuedSong } from "./queued-song";
-import { RegisteredUser } from "./registered-user";
-import { VoteValue } from "../value-objects/vote-value";
-import { Uuid } from "../value-objects/uuid";
-import { Identifiable } from "../interfaces/identifiable";
+import { Identifiable } from '../interfaces/identifiable';
+import { Uuid } from '../value-objects/uuid';
+import { VoteValue } from '../value-objects/vote-value';
+import { QueuedSong } from './queued-song';
+import { RegisteredUser } from './registered-user';
 
 export class Vote implements Identifiable<Vote> {
   private id: string;
@@ -10,8 +10,7 @@ export class Vote implements Identifiable<Vote> {
   private song: QueuedSong;
   private value: VoteValue;
 
-  private constructor() {
-  }
+  private constructor() {}
 
   static create(value: VoteValue, song: QueuedSong, by: RegisteredUser): Vote {
     const instance = new Vote();
@@ -24,7 +23,7 @@ export class Vote implements Identifiable<Vote> {
   }
 
   equals(instance: Vote): boolean {
-    return this.getId().equals(instance.getId())
+    return this.getId().equals(instance.getId());
   }
 
   getId(): Uuid {

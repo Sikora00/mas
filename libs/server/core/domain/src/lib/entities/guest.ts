@@ -1,5 +1,3 @@
-import { User } from "./user";
+import { User } from './user';
 
-export class Guest extends User {
-
-}
+export class Guest extends User {}

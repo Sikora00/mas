@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetUserRoomsQuery } from './get-user-rooms.query';
+import { Room } from '@mas/server/core/domain';
 import {
   RegisteredUserRepository,
   RoomRepository,
 } from '@mas/server/core/domain-services';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { GetUserRoomsQuery } from './get-user-rooms.query';
 import { GetUserRoomsReadModel } from './get-user-rooms.read-model';
-import { Room } from '@mas/server/core/domain';
 
 @QueryHandler(GetUserRoomsQuery)
 export class GetUserRoomsHandler implements IQueryHandler<GetUserRoomsQuery> {

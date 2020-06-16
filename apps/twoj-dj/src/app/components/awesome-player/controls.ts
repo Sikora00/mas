@@ -3,7 +3,7 @@ import { Scene } from './scene';
 import { Tracker } from './tracker';
 
 export class Controls {
-  playing: boolean = false;
+  playing = false;
   private context: CanvasRenderingContext2D;
   private timeControl: Element;
   private playButton: HTMLButtonElement;
@@ -27,8 +27,6 @@ export class Controls {
     this.initPlayButton();
     this.initPauseButton();
     this.initSoundButton();
-    this.initPrevSongButton();
-    this.initNextSongButton();
     this.initTimeHandler();
   }
 
@@ -62,22 +60,6 @@ export class Controls {
         this.soundButton.classList.add('disable');
         this.player.mute();
       }
-    });
-  }
-
-  initPrevSongButton(): void {
-    this.prevSongButton = document.querySelector('.prevSong');
-    this.prevSongButton.addEventListener('mouseup', () => {
-      this.player.prevTrack();
-      if (this.playing) this.player.play();
-    });
-  }
-
-  initNextSongButton(): void {
-    this.nextSongButton = document.querySelector('.nextSong');
-    this.nextSongButton.addEventListener('click', () => {
-      this.player.nextTrack();
-      if (this.playing) this.player.play();
     });
   }
 

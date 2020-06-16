@@ -1,6 +1,6 @@
-import { User } from './user';
-import { Room } from './room';
 import { Uuid } from '../..';
+import { Room } from './room';
+import { User } from './user';
 
 export class RegisteredUser extends User {
   private login: string;
@@ -18,7 +18,7 @@ export class RegisteredUser extends User {
     instance.id = id.toString();
     instance.name = name;
     instance.isActive = true;
-    instance.queued = [];
+    instance.queued = Promise.resolve([]);
     instance.wantsToListenMusic = false;
     instance.login = login;
     instance.password = password;
@@ -30,7 +30,7 @@ export class RegisteredUser extends User {
     return this.savedRooms;
   }
 
-  appointModerator() {
+  appointModerator(): import('./moderator').Moderator {
     const Moderator = require('./moderator').Moderator;
     return Moderator.createFromRegisteredUser(this);
   }

@@ -1,28 +1,36 @@
-import { Command } from 'nestjs-command';
-import { Injectable } from '@nestjs/common';
+import {
+  ExternalRadio,
+  RegisteredUser,
+  Room,
+  Song,
+  Uuid,
+} from '@mas/server/core/domain';
 import {
   ExternalRadioRepository,
   RegisteredUserRepository,
   RoomRepository,
 } from '@mas/server/core/domain-services';
-import {
-  ExternalRadio,
-  RegisteredUser,
-  Room,
-  Uuid,
-} from '@mas/server/core/domain';
-import { getConnection } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Command } from 'nestjs-command';
+import { getConnection, Repository } from 'typeorm';
+import { SongSchema } from '../../../../../libs/server/infrastructure/src/lib/typeorm/schemas/song.schema';
 
 @Injectable()
 export class LoadSampleDataCommand {
   constructor(
     private externalRadioRepository: ExternalRadioRepository,
     private registeredUserRepository: RegisteredUserRepository,
-    private roomRepository: RoomRepository
+    private roomRepository: RoomRepository,
+    @InjectRepository(SongSchema) private songRepository: Repository<Song>
   ) {}
 
-  @Command({ command: 'data:load', describe: 'create a user', autoExit: true })
-  async exec() {
+  @Command({
+    command: 'data:load',
+    describe: 'load sample data',
+    autoExit: true,
+  })
+  async exec(): Promise<void> {
     await getConnection().synchronize(true);
     const user = RegisteredUser.register(
       Uuid.fromString('CBA99AC3-97AF-4906-A120-6BEF5B41674E'),
@@ -56,10 +64,23 @@ export class LoadSampleDataCommand {
       new URL(
         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/RMF_FM_logo.svg/1200px-RMF_FM_logo.svg.png'
       ),
-      new URL('http://rmfstream2.interia.pl:8000/rmf_fm'),
-
+      new URL('http://rmfstream2.interia.pl:8000/rmf_fm')
     );
     await this.externalRadioRepository.save(radioZet);
     await this.externalRadioRepository.save(rmfFM);
+
+    const fobSong = Song.create(
+      Uuid.fromString('cb096865-51e3-4b3e-b6fb-065d4fc5ea3f'),
+      'FOB'
+    );
+    const anotherSong = Song.create(
+      Uuid.fromString('BB3E76CC-8C0D-4E6E-8ED8-880ECEAFDD53'),
+      'Another Song'
+    );
+    await this.songRepository.save(fobSong);
+    await this.songRepository.save(anotherSong);
+    await rockRoom.addToQueue(anotherSong, user);
+    await rockRoom.addToQueue(fobSong, user);
+    await this.roomRepository.save(rockRoom);
   }
 }

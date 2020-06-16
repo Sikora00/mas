@@ -1,11 +1,6 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  Inject,
-} from '@angular/core';
-import { ExternalRadio } from '../../models/external-radio.model';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ExternalRadio } from '../../models/external-radio.model';
 
 @Component({
   selector: 'mas-external-radio-selection-dialog',

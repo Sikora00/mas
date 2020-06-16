@@ -1,14 +1,14 @@
 import { Identifiable } from '../interfaces/identifiable';
 import { Uuid } from '../value-objects/uuid';
 import { ExternalRadio } from './external-radio';
-import { Room } from './room';
 import { QueuedSong } from './queued-song';
+import { Room } from './room';
 
 export abstract class User implements Identifiable<User> {
   protected id: string;
   protected isActive: boolean;
   protected name: string;
-  protected queued: QueuedSong[];
+  protected queued: Promise<QueuedSong[]>;
   protected selectedExternalRadio?: ExternalRadio;
   protected selectedRoom?: Room;
   protected wantsToListenMusic: boolean;
@@ -16,9 +16,10 @@ export abstract class User implements Identifiable<User> {
   // @ts-ignore
   get currentMusicResource(): URL {}
 
-  addedToQueue(queuedSong: QueuedSong): void {
-    if (!this.queued.find((queuedItem) => queuedItem.equals(queuedSong))) {
-      this.queued.push(queuedSong);
+  async addedToQueue(queuedSong: QueuedSong): Promise<void> {
+    const queued = await this.queued;
+    if (!queued.find((queuedItem) => queuedItem.equals(queuedSong))) {
+      queued.push(queuedSong);
     }
   }
 

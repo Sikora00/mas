@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RoomSchema } from './schemas/room.schema';
-import { UserSchema } from './schemas/user.schema';
-import { RegisteredUserSchema } from './schemas/registered-user.schema';
 import { ExternalRadioSchema } from './schemas/external-radio.schema';
+import { QueuedSongSchema } from './schemas/queued-song.schema';
+import { RegisteredUserSchema } from './schemas/registered-user.schema';
+import { RoomSchema } from './schemas/room.schema';
+import { SongSchema } from './schemas/song.schema';
+import { UserSchema } from './schemas/user.schema';
 
 @Module({
   imports: [
@@ -19,10 +21,12 @@ import { ExternalRadioSchema } from './schemas/external-radio.schema';
       logging: ['error'],
     }),
     TypeOrmModule.forFeature([
-      RoomSchema,
-      UserSchema,
-      RegisteredUserSchema,
       ExternalRadioSchema,
+      QueuedSongSchema,
+      SongSchema,
+      UserSchema, // Must be before child
+      RegisteredUserSchema,
+      RoomSchema,
     ]),
   ],
   exports: [TypeOrmModule],

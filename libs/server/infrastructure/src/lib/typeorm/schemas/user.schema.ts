@@ -1,5 +1,5 @@
-import { EntitySchema } from 'typeorm';
 import { User } from '@mas/server/core/domain';
+import { EntitySchema } from 'typeorm';
 
 export const UserSchema = new EntitySchema<any>({
   target: User,
@@ -11,6 +11,12 @@ export const UserSchema = new EntitySchema<any>({
     },
   },
   relations: {
+    queued: {
+      lazy: true,
+      type: 'one-to-many',
+      target: 'QueuedSong',
+      inverseSide: 'addedBy',
+    },
     selectedRoom: {
       type: 'many-to-one',
       target: 'Room',
@@ -19,7 +25,7 @@ export const UserSchema = new EntitySchema<any>({
     selectedExternalRadio: {
       type: 'many-to-one',
       target: 'ExternalRadio',
-      inverseSide: 'selectedBy'
-    }
+      inverseSide: 'selectedBy',
+    },
   },
 });

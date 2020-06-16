@@ -1,10 +1,10 @@
 import {
-  Component,
-  OnInit,
   ChangeDetectionStrategy,
+  Component,
   EventEmitter,
-  Output,
   Input,
+  OnInit,
+  Output,
 } from '@angular/core';
 import { Room } from '../../models/room.model';
 

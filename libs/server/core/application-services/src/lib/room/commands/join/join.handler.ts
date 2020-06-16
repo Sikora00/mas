@@ -1,9 +1,9 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { JoinCommand } from './join.command';
 import {
   RoomRepository,
   UserRepository,
 } from '@mas/server/core/domain-services';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { JoinCommand } from './join.command';
 
 @CommandHandler(JoinCommand)
 export class JoinHandler implements ICommandHandler<JoinCommand> {

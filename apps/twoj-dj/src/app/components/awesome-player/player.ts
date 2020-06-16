@@ -1,9 +1,9 @@
 import { Subject } from 'rxjs';
+import { ExternalRadio } from '../../models/external-radio.model';
+import { Room } from '../../models/room.model';
 
 import { Framer } from './framer';
 import { Scene } from './scene';
-import { Room } from '../../models/room.model';
-import { ExternalRadio } from '../../models/external-radio.model';
 
 export class Player {
   get radio(): ExternalRadio | undefined {
@@ -97,40 +97,13 @@ export class Player {
   }
 
   handleSourceChange(): void {
-    let mainTitle = 'DJ PAWEŁ';
-    let secondTitle = this.room?.name || this.radio?.name || '';
+    const mainTitle = 'TWÓJ DJ';
+    const secondTitle = this.room?.name || this.radio?.name || '';
 
     document.querySelector('.song .artist').textContent = mainTitle;
     document.querySelector('.song .name').textContent = secondTitle;
-    // this.currentSongIndex = index;
   }
 
-  nextTrack(): void {
-    // ++this.currentSongIndex;
-    // if (this.currentSongIndex == this.tracks.length) {
-    //     this.currentSongIndex = 0;
-    // }
-    // this.source.stop();
-    // this.source = this.context.createBufferSource();
-    // this.source.connect(this.gainNode);
-    // this.loadTrack(this.currentSongIndex);
-    // this.source.start();
-  }
-
-  prevTrack(): void {
-    //   --this.currentSongIndex;
-    //   if (this.currentSongIndex == -1) {
-    //     this.currentSongIndex = this.tracks.length - 1;
-    //   }
-    //
-    //   this.source.stop();
-    //   this.source = this.context.createBufferSource();
-    //   this.source.connect(this.gainNode);
-    //   this.loadTrack(this.currentSongIndex);
-    //   this.source.start();
-  }
-
-  //
   play(): void {
     if (this.context.resume) {
       this.context.resume();
@@ -160,8 +133,15 @@ export class Player {
   }
 
   initHandlers(): void {
+    this.audio.addEventListener('play', this.emitIsNotLoading.bind(this));
+    this.audio.addEventListener('canplay', this.emitIsNotLoading.bind(this));
+    this.audio.addEventListener('playing', this.emitIsNotLoading.bind(this));
     this.audio.addEventListener('ended', this.emitIsLoading.bind(this));
-    this.audio.addEventListener('progress', this.emitIsNotLoading.bind(this));
+    this.audio.addEventListener('progress', () => {
+      if (this.context.state === 'running' && this.audio.currentTime === 0) {
+        this.emitIsLoading();
+      }
+    });
     this.audio.addEventListener('waiting', this.emitIsLoading.bind(this));
 
     // ToDo onaudioprocess is deprecated

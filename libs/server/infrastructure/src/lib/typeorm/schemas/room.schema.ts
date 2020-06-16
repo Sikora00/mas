@@ -1,5 +1,5 @@
-import { EntitySchema } from 'typeorm';
 import { Room, User } from '@mas/server/core/domain';
+import { EntitySchema } from 'typeorm';
 
 export const RoomSchema = new EntitySchema<any>({
   target: Room,
@@ -17,6 +17,20 @@ export const RoomSchema = new EntitySchema<any>({
     },
   },
   relations: {
+    currentSong: {
+      eager: true,
+      type: 'one-to-one',
+      target: 'QueuedSong',
+      joinColumn: true,
+    },
+    queue: {
+      persistence: true,
+      cascade: true,
+      lazy: true,
+      type: 'one-to-many',
+      target: 'QueuedSong',
+      inverseSide: 'room',
+    },
     savedFor: {
       eager: true,
       type: 'many-to-many',

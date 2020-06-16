@@ -10,13 +10,13 @@ import {
 } from '@angular/core';
 import { of } from 'rxjs';
 import { delay, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { ExternalRadio } from '../../models/external-radio.model';
+import { Room } from '../../models/room.model';
 import { Controls } from './controls';
 import { Framer } from './framer';
 import { Player } from './player';
 import { Scene } from './scene';
 import { Tracker } from './tracker';
-import { Room } from '../../models/room.model';
-import { ExternalRadio } from '../../models/external-radio.model';
 
 @Component({
   selector: 'sdj-awesome-player',
@@ -86,7 +86,7 @@ export class AwesomePlayerComponent
     this.setElementSize();
   }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
     this.framer = new Framer();
     const tracker = new Tracker();
     this.framer.tracker = tracker;

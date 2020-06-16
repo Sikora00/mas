@@ -27,7 +27,8 @@
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "apps/twoj-dj/src/styles.scss"
+              "apps/twoj-dj/src/styles.scss",
+              "apps/twoj-dj/src/styles-app-loading.scss"
             ],
             "scripts": []
           },
@@ -374,7 +375,8 @@
                   "replace": "apps/cli/src/environments/environment.ts",
                   "with": "apps/cli/src/environments/environment.prod.ts"
                 }
-              ]
+              ],
+              "watch": false
             }
           }
         },

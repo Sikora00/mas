@@ -1,6 +1,6 @@
-import { User } from './user';
 import { Identifiable } from '../interfaces/identifiable';
 import { Uuid } from '../value-objects/uuid';
+import { User } from './user';
 
 export class ExternalRadio implements Identifiable<ExternalRadio> {
   private id: string;
@@ -9,8 +9,7 @@ export class ExternalRadio implements Identifiable<ExternalRadio> {
   private address: string;
   private selectedBy: Promise<User[]>;
 
-  private constructor() {
-  }
+  private constructor() {}
 
   static create(name: string, logo: URL, address: URL): ExternalRadio {
     const instance = new ExternalRadio();
@@ -31,7 +30,7 @@ export class ExternalRadio implements Identifiable<ExternalRadio> {
   }
 
   getLogoUrl(): URL {
-    return new URL(this.logo)
+    return new URL(this.logo);
   }
 
   getMusicResource(): URL {

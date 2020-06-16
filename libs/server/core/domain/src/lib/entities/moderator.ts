@@ -1,5 +1,5 @@
-import { RegisteredUser } from "./registered-user";
-import { Room } from "./room";
+import { RegisteredUser } from './registered-user';
+import { Room } from './room';
 
 export class Moderator extends RegisteredUser {
   moderates: Room[];
@@ -9,7 +9,7 @@ export class Moderator extends RegisteredUser {
   }
 
   moderate(room: Room): void {
-    if (!this.moderates.find(r => r.equals(room))) {
+    if (!this.moderates.find((r) => r.equals(room))) {
       this.moderates.push(room);
       room.addModerator(this);
     }

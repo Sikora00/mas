@@ -1,8 +1,8 @@
+import { RegisteredUser, User, Uuid } from '@mas/server/core/domain';
+import { UserRepository } from '@mas/server/core/domain-services';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RegisteredUser, User, Uuid } from '@mas/server/core/domain';
 import { Repository } from 'typeorm';
-import { UserRepository } from '@mas/server/core/domain-services';
 import { RegisteredUserSchema } from '../schemas/registered-user.schema';
 
 @Injectable()

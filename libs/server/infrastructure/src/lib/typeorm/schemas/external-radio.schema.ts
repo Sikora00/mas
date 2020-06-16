@@ -1,5 +1,5 @@
-import { EntitySchema } from 'typeorm';
 import { ExternalRadio, User } from '@mas/server/core/domain';
+import { EntitySchema } from 'typeorm';
 
 export const ExternalRadioSchema = new EntitySchema<any>({
   target: ExternalRadio,
@@ -20,6 +20,11 @@ export const ExternalRadioSchema = new EntitySchema<any>({
     },
   },
   relations: {
-    selectedBy: {lazy: true, target: 'User', type: 'many-to-one', inverseSide: 'selectedExternalRadio'}
-  }
+    selectedBy: {
+      lazy: true,
+      target: 'User',
+      type: 'many-to-one',
+      inverseSide: 'selectedExternalRadio',
+    },
+  },
 });

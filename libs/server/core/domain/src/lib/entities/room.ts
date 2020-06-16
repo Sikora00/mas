@@ -1,11 +1,11 @@
 import { Identifiable } from '../interfaces/identifiable';
 import { Uuid } from '../value-objects/uuid';
-import { User } from './user';
-import { RegisteredUser } from './registered-user';
 import { Moderator } from './moderator';
-import { QueuedSong } from './queued-song';
-import { Song } from './song';
 import { Playlist } from './playlist';
+import { QueuedSong } from './queued-song';
+import { RegisteredUser } from './registered-user';
+import { Song } from './song';
+import { User } from './user';
 
 export class Room implements Identifiable<Room> {
   private static readonly startQueueOwnSongs = 50;
@@ -15,7 +15,7 @@ export class Room implements Identifiable<Room> {
   private id: string;
   private moderators: Moderator[];
   private name: string;
-  private queue: QueuedSong[];
+  private queue: Promise<QueuedSong[]>;
   private savedFor: RegisteredUser[];
   private usersInRoom: User[];
 
@@ -27,7 +27,7 @@ export class Room implements Identifiable<Room> {
     instance.name = name;
     instance.address = 'http://localhost:3333/stream/' + instance.id;
     instance.moderators = [createdBy.appointModerator()];
-    instance.queue = [];
+    instance.queue = Promise.resolve([]);
     instance.savedFor = [];
     instance.usersInRoom = [];
     return instance;
@@ -40,14 +40,15 @@ export class Room implements Identifiable<Room> {
     }
   }
 
-  addToQueue(song: Song, addedBy: User): void {
-    const queuedSong = QueuedSong.create(song, this, addedBy);
-    this.assignQueueItem(queuedSong);
+  async addToQueue(song: Song, addedBy: User): Promise<void> {
+    const queuedSong = await QueuedSong.create(song, this, addedBy);
+    await this.assignQueueItem(queuedSong);
   }
 
-  assignQueueItem(queuedSong: QueuedSong): void {
-    if (!this.queue.find((queueItem) => queueItem.equals(queuedSong))) {
-      this.queue.push(queuedSong);
+  async assignQueueItem(queuedSong: QueuedSong): Promise<void> {
+    const queue = await this.queue;
+    if (!queue.find((queueItem) => queueItem.equals(queuedSong))) {
+      queue.push(queuedSong);
     }
   }
 
@@ -67,8 +68,9 @@ export class Room implements Identifiable<Room> {
     return this.name;
   }
 
-  goToTheNextSong(): void {
-    this.currentSong = this.queue.shift();
+  async goToTheNextSong(): Promise<void> {
+    const queue = await this.queue;
+    this.currentSong = queue.shift();
   }
 
   isMusicPlaying(): boolean {
@@ -89,10 +91,10 @@ export class Room implements Identifiable<Room> {
     }
   }
 
-  queuePlaylist(playlist: Playlist, by: RegisteredUser): void {
-    playlist.getAllSongs().forEach((song) => {
-      this.addToQueue(song, by);
-    });
+  async queuePlaylist(playlist: Playlist, by: RegisteredUser): Promise<void> {
+    for (const song of playlist.getAllSongs()) {
+      await this.addToQueue(song, by);
+    }
   }
 
   saveByUser(user: RegisteredUser): void {
@@ -100,5 +102,15 @@ export class Room implements Identifiable<Room> {
       this.savedFor.push(user);
       user.save(this);
     }
+  }
+
+  getCurrentSong(): QueuedSong | null {
+    return this.currentSong;
+  }
+
+  async playNextSong(): Promise<void> {
+    const queue = (await this.queue).filter((song) => !song.getPlayedAt());
+    this.currentSong = queue.shift();
+    this.currentSong?.play();
   }
 }

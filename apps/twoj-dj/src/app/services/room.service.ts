@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { urlFactory } from '@valueadd/typed-urls';
-import { Room } from '../models/room.model';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { urlFactory } from '@valueadd/typed-urls';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
+import { Room } from '../models/room.model';
 
 @Injectable({
   providedIn: 'root',
