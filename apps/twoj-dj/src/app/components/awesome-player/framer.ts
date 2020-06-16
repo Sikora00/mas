@@ -19,10 +19,10 @@ export class Framer {
 
   countTicks: number;
   frequencyData: Uint8Array | Array<any> = [];
-  tickSize: number = 10;
-  PI: number = 360;
-  index: number = 0;
-  loadingAngle: number = 0;
+  tickSize = 10;
+  PI = 360;
+  index = 0;
+  loadingAngle = 0;
 
   tracker: Tracker;
 

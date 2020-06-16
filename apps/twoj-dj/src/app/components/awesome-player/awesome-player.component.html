@@ -11,19 +11,24 @@
     }"
   >
     <div class="song">
-      <div class="artist">Twój DJ</div>
-      <div class="name"></div>
+      <div class="artist"><h1>Twój DJ</h1></div>
+      <div class="name">
+        <h2>{{ room?.name || externalRadio?.name }}</h2>
+      </div>
     </div>
     <div class="playarea">
       <div class="prevSong"></div>
       <audio id="playerHtmlAudio"></audio>
-      <div class="play"></div>
-      <div class="pause"></div>
+      <div *ngIf="!isPlaying" (click)="onPlay()" class="play"></div>
+      <div *ngIf="isPlaying" (click)="onPause()" class="pause"></div>
       <div class="nextSong"></div>
     </div>
     <div class="player__body__others">
-      <div class="soundControl"></div>
-      <div class="time">00:00</div>
+      <div
+        [ngClass]="{ disable: isMuted }"
+        (click)="toggleSound()"
+        class="soundControl"
+      ></div>
     </div>
   </div>
 </div>

@@ -6,15 +6,6 @@ import { Framer } from './framer';
 import { Scene } from './scene';
 
 export class Player {
-  get radio(): ExternalRadio | undefined {
-    return this._radio;
-  }
-
-  set radio(value: ExternalRadio | undefined) {
-    this._radio = value;
-    this.handleSourceChange();
-  }
-
   get src(): string {
     return this._src;
   }
@@ -28,15 +19,6 @@ export class Player {
         this.audio.play();
       }
     }
-  }
-
-  get room(): Room {
-    return this._room;
-  }
-
-  set room(value: Room) {
-    this._room = value;
-    this.handleSourceChange();
   }
 
   isLoadingChange$: Subject<boolean> = new Subject<boolean>();
@@ -94,14 +76,6 @@ export class Player {
       this.framer.setLoadingPercent(1);
     }
     this.scene.init();
-  }
-
-  handleSourceChange(): void {
-    const mainTitle = 'TWÓJ DJ';
-    const secondTitle = this.room?.name || this.radio?.name || '';
-
-    document.querySelector('.song .artist').textContent = mainTitle;
-    document.querySelector('.song .name').textContent = secondTitle;
   }
 
   play(): void {

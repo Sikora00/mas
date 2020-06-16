@@ -1,4 +1,3 @@
-import { Controls } from './controls';
 import { Framer } from './framer';
 import { Tracker } from './tracker';
 
@@ -11,18 +10,14 @@ export class Scene {
   canvas: HTMLCanvasElement;
 
   padding: number;
-  minSize: number = 740;
-  optimiseHeight: number = 982;
-  _inProcess: boolean = false;
+  minSize = 740;
+  optimiseHeight = 982;
+  _inProcess = false;
   private width: number;
   private height: number;
   coord: ClientRect | DOMRect;
 
-  constructor(
-    private framer: Framer,
-    private tracker: Tracker,
-    private controls: Controls
-  ) {}
+  constructor(private framer: Framer, private tracker: Tracker) {}
 
   init(): void {
     this.canvasConfigure();
@@ -30,7 +25,6 @@ export class Scene {
 
     this.framer.init(this);
     this.tracker.init(this);
-    this.controls.init(this);
 
     this.startRender();
   }
@@ -83,8 +77,6 @@ export class Scene {
 
   draw(): void {
     this.framer.draw();
-    this.tracker.draw();
-    this.controls.draw();
   }
 
   startRender(): void {
