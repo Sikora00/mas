@@ -7,6 +7,7 @@ import { Uuid } from '../value-objects/uuid';
 import { ExternalRadio } from './external-radio';
 import { QueuedSong } from './queued-song';
 import { Room } from './room';
+import { Vote } from './vote';
 
 export abstract class User extends AggregateRoot implements Identifiable<User> {
   protected id: string;
@@ -15,6 +16,7 @@ export abstract class User extends AggregateRoot implements Identifiable<User> {
   protected queued: Promise<QueuedSong[]>;
   protected selectedExternalRadio?: ExternalRadio;
   protected selectedRoom?: Room;
+  protected votes: Promise<Vote[]>;
   protected wantsToListenMusic: boolean;
 
   get currentMusicResource(): UserMusicResource {

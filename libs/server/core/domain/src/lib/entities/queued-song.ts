@@ -13,7 +13,7 @@ export class QueuedSong implements Identifiable<QueuedSong> {
   private playedAt: Date;
   private room: Promise<Room>;
   private song: Song;
-  private votes: Map<string, Vote>;
+  private votes: Promise<Vote[]>;
   private constructor() {}
 
   static async create(
@@ -26,6 +26,7 @@ export class QueuedSong implements Identifiable<QueuedSong> {
     instance.song = song;
     instance.room = Promise.resolve(room);
     instance.addedBy = Promise.resolve(addedBy);
+    instance.votes = Promise.resolve([]);
 
     await room.assignQueueItem(instance);
     await song.addedToQueue(instance);
@@ -49,11 +50,11 @@ export class QueuedSong implements Identifiable<QueuedSong> {
     return this.song;
   }
 
-  vote(value: VoteValue, by: RegisteredUser): Vote {
-    const userId = by.getId().toString();
-    if (!this.votes.has(userId)) {
+  async vote(value: VoteValue, by: RegisteredUser): Promise<Vote> {
+    const votes = await this.votes;
+    if (!votes.find((vote) => vote.getAddedBy().equals(by))) {
       const vote = Vote.create(value, this, by);
-      this.votes.set(userId, vote);
+      votes.push(vote);
       return vote;
     } else {
       throw new Error('User already voted for this song');

@@ -17,11 +17,24 @@ export const SongSchema = new EntitySchema<any>({
     },
   },
   relations: {
+    genre: {
+      eager: true,
+      type: 'many-to-one',
+      target: 'Genre',
+      inverseSide: 'songs',
+    },
     queued: {
       lazy: true,
       type: 'one-to-many',
       target: 'QueuedSong',
       inverseSide: 'song',
+    },
+    inPlaylists: {
+      lazy: true,
+      type: 'many-to-many',
+      target: 'Playlist',
+      inverseSide: 'songs',
+      joinTable: true,
     },
   },
 });

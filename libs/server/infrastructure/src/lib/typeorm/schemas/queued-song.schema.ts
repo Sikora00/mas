@@ -1,5 +1,6 @@
 import { QueuedSong, Room, Song, User } from '@mas/server/core/domain';
 import { EntitySchema } from 'typeorm';
+import { Vote } from '../../../../../core/domain/src/lib/entities/vote';
 
 export const QueuedSongSchema = new EntitySchema<any>({
   target: QueuedSong,
@@ -33,6 +34,13 @@ export const QueuedSongSchema = new EntitySchema<any>({
       type: 'many-to-one',
       target: 'Song',
       inverseSide: 'queued',
+    },
+    votes: {
+      cascade: true,
+      lazy: true,
+      type: 'one-to-many',
+      target: 'Vote',
+      inverseSide: 'song',
     },
   },
 });

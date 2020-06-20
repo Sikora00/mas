@@ -29,5 +29,11 @@ export const UserSchema = new EntitySchema<any>({
       target: 'ExternalRadio',
       inverseSide: 'selectedBy',
     },
+    vote: {
+      lazy: true,
+      type: 'one-to-many',
+      target: 'Vote',
+      inverseSide: 'by',
+    },
   },
 });

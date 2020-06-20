@@ -7,24 +7,35 @@ export class Playlist implements Identifiable<Playlist> {
   private id: string;
   private genre?: Genre;
   private name: string;
-  private songs: Song[];
+  private songs: Promise<Song[]>;
   private nestedPlaylists: Playlist[];
-  private containedIn: Playlist[];
+  private containedIn: Promise<Playlist[]>;
 
-  addPlaylist(playlist: Playlist): void {
+  private constructor() {}
+
+  static create(name: string): Playlist {
+    const instance = new Playlist();
+    instance.id = Uuid.random().toString();
+    instance.name = name;
+    return instance;
+  }
+
+  async addPlaylist(playlist: Playlist): Promise<void> {
+    const containedIn = await playlist.containedIn;
     if (
       !this.nestedPlaylists.find((p) => p.equals(playlist)) &&
       !playlist.equals(this)
     ) {
       this.nestedPlaylists.push(playlist);
-      playlist.containedIn.push(this);
+      containedIn.push(this);
     }
   }
 
-  addSong(song: Song): void {
-    if (!this.songs.find((s) => s.equals(song))) {
-      this.songs.push(song);
-      song.addToPlaylist(this);
+  async addSong(song: Song): Promise<void> {
+    const songs = await this.songs;
+    if (!songs.find((s) => s.equals(song))) {
+      songs.push(song);
+      await song.addToPlaylist(this);
     }
   }
 
@@ -32,11 +43,11 @@ export class Playlist implements Identifiable<Playlist> {
     return this.getId().equals(instance.getId());
   }
 
-  getAllSongs(): Song[] {
-    let songs = this.songs;
-    this.nestedPlaylists.forEach((playlist) => {
-      songs = songs.concat(playlist.getAllSongs());
-    });
+  async getAllSongs(): Promise<Song[]> {
+    let songs = await this.songs;
+    for (const playlist of this.nestedPlaylists) {
+      songs = songs.concat(await playlist.getAllSongs());
+    }
 
     return songs;
   }

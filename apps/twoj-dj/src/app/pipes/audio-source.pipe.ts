@@ -8,17 +8,12 @@ import { Song } from '../models/song.model';
   name: 'audioSource',
 })
 export class AudioSourcePipe implements PipeTransform {
-  transform(type: AudioSource, ...args: any): unknown {
-    const [room, song, radio]: [
-      Room | undefined,
-      Song | undefined,
-      ExternalRadio | undefined
-    ] = args;
+  transform(type: AudioSource, ...args: any[]): unknown {
     switch (type) {
       case AudioSource.Radio:
-        return radio?.name || '';
+        return args[1]?.name || '';
       case AudioSource.Room:
-        return `${room?.name} - ${song?.title}` || '';
+        return `${args[0]?.title}` || '';
       default:
         return '';
     }

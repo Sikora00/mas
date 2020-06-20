@@ -14,7 +14,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Command } from 'nestjs-command';
 import { getConnection, Repository } from 'typeorm';
+import { Genre } from '../../../../../libs/server/core/domain/src/lib/entities/genre';
+import { Playlist } from '../../../../../libs/server/core/domain/src/lib/entities/playlist';
+import { Vote } from '../../../../../libs/server/core/domain/src/lib/entities/vote';
+import { MusicGenreType } from '../../../../../libs/server/core/domain/src/lib/value-objects/music-genre-type';
+import { VoteValue } from '../../../../../libs/server/core/domain/src/lib/value-objects/vote-value';
+import { GenreSchema } from '../../../../../libs/server/infrastructure/src/lib/typeorm/schemas/genre.schema';
+import { PlaylistSchema } from '../../../../../libs/server/infrastructure/src/lib/typeorm/schemas/playlist.schema';
 import { SongSchema } from '../../../../../libs/server/infrastructure/src/lib/typeorm/schemas/song.schema';
+import { VoteSchema } from '../../../../../libs/server/infrastructure/src/lib/typeorm/schemas/vote.schema';
 
 @Injectable()
 export class LoadSampleDataCommand {
@@ -22,7 +30,11 @@ export class LoadSampleDataCommand {
     private externalRadioRepository: ExternalRadioRepository,
     private registeredUserRepository: RegisteredUserRepository,
     private roomRepository: RoomRepository,
-    @InjectRepository(SongSchema) private songRepository: Repository<Song>
+    @InjectRepository(SongSchema) private songRepository: Repository<Song>,
+    @InjectRepository(PlaylistSchema)
+    private playlistRepository: Repository<Playlist>,
+    @InjectRepository(GenreSchema) private genreRepository: Repository<Genre>,
+    @InjectRepository(VoteSchema) private voteRepository: Repository<Vote>
   ) {}
 
   @Command({
@@ -89,9 +101,27 @@ export class LoadSampleDataCommand {
     await this.songRepository.save(megadethSong);
     await this.songRepository.save(enriqueSong);
 
+    const popAndRockGenre = Genre.create(
+      'PopRock',
+      new Set([MusicGenreType.Rock, MusicGenreType.Pop])
+    );
+    await fobSong.setGenre(popAndRockGenre);
+    await this.genreRepository.save(popAndRockGenre);
+
+    const playlist = Playlist.create('Amazing Playlist');
+    await Promise.all([
+      playlist.addSong(fobSong),
+      playlist.addSong(megadethSong),
+      playlist.addSong(enriqueSong),
+    ]);
+    await this.playlistRepository.save(playlist);
+
     await popRoom.addToQueue(enriqueSong, user);
     await popRoom.addToQueue(megadethSong, user);
     await popRoom.addToQueue(fobSong, user);
+    await popRoom.playNextSong();
+
+    await popRoom.vote(VoteValue.Positive, user);
     await this.roomRepository.save(popRoom);
   }
 }

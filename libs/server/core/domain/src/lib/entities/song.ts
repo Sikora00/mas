@@ -9,7 +9,7 @@ export class Song implements Identifiable<Song> {
   private audioFile: SongFile;
   private genre?: Genre;
   private id: string;
-  private inPlaylists: Playlist[];
+  private inPlaylists: Promise<Playlist[]>;
   private image: string;
   private queued: Promise<QueuedSong[]>;
   private title: string;
@@ -25,7 +25,7 @@ export class Song implements Identifiable<Song> {
     instance.addedAt = new Date();
     instance.genre = genre;
     instance.id = id.toString();
-    instance.inPlaylists = [];
+    instance.inPlaylists = Promise.resolve([]);
     instance.image = image.toString();
     instance.queued = Promise.resolve([]);
     instance.title = title;
@@ -39,10 +39,11 @@ export class Song implements Identifiable<Song> {
     }
   }
 
-  addToPlaylist(playlist: Playlist): void {
-    if (!this.inPlaylists.find((p) => p.equals(playlist))) {
-      this.inPlaylists.push(playlist);
-      playlist.addSong(this);
+  async addToPlaylist(playlist: Playlist): Promise<void> {
+    const inPlaylists = await this.inPlaylists;
+    if (!inPlaylists.find((p) => p.equals(playlist))) {
+      inPlaylists.push(playlist);
+      await playlist.addSong(this);
     }
   }
 
@@ -64,6 +65,13 @@ export class Song implements Identifiable<Song> {
 
   getImage(): URL {
     return new URL(this.image);
+  }
+
+  async setGenre(genre: Genre): Promise<void> {
+    if (!this.genre?.equals(genre)) {
+      this.genre = genre;
+      await genre.addSong(this);
+    }
   }
 }
 

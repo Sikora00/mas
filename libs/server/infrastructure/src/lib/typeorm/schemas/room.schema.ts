@@ -23,6 +23,12 @@ export const RoomSchema = new EntitySchema<any>({
       target: 'QueuedSong',
       joinColumn: true,
     },
+    moderators: {
+      lazy: true,
+      type: 'many-to-many',
+      target: 'Moderator',
+      joinTable: true,
+    },
     queue: {
       persistence: true,
       cascade: true,

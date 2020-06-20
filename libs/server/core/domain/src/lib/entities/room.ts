@@ -7,6 +7,7 @@ import { UserJoinedRoomEvent } from '../events/user-joined-room.event';
 import { UserLeavedRoomEvent } from '../events/user-leaved-room.event';
 import { Identifiable } from '../interfaces/identifiable';
 import { Uuid } from '../value-objects/uuid';
+import { VoteValue } from '../value-objects/vote-value';
 import { Moderator } from './moderator';
 import { Playlist } from './playlist';
 import { QueuedSong } from './queued-song';
@@ -20,7 +21,7 @@ export class Room extends AggregateRoot implements Identifiable<Room> {
   private address: string;
   private currentSong?: QueuedSong;
   private id: string;
-  private moderators: Moderator[];
+  private moderators: Promise<Moderator[]>;
   private name: string;
   private queue: Promise<QueuedSong[]>;
   private savedFor: Promise<RegisteredUser[]>;
@@ -35,17 +36,18 @@ export class Room extends AggregateRoot implements Identifiable<Room> {
     instance.id = id.toString();
     instance.name = name;
     instance.address = 'http://localhost:3333/stream/' + instance.id;
-    instance.moderators = [createdBy.appointModerator()];
+    instance.moderators = Promise.resolve([createdBy.appointModerator()]);
     instance.queue = Promise.resolve([]);
     instance.savedFor = Promise.resolve([]);
     instance.usersInRoom = Promise.resolve([]);
     return instance;
   }
 
-  addModerator(moderator: Moderator): void {
-    if (!this.moderators.find((m) => m.equals(moderator))) {
-      this.moderators.push(moderator);
-      moderator.moderate(this);
+  async addModerator(moderator: Moderator): Promise<void> {
+    const moderators = await this.moderators;
+    if (!moderators.find((m) => m.equals(moderator))) {
+      moderators.push(moderator);
+      await moderator.moderate(this);
     }
   }
 
@@ -124,7 +126,7 @@ export class Room extends AggregateRoot implements Identifiable<Room> {
   }
 
   async queuePlaylist(playlist: Playlist, by: RegisteredUser): Promise<void> {
-    for (const song of playlist.getAllSongs()) {
+    for (const song of await playlist.getAllSongs()) {
       await this.addToQueue(song, by);
     }
   }
@@ -167,5 +169,9 @@ export class Room extends AggregateRoot implements Identifiable<Room> {
     }
     this.currentSong = nextSong;
     this.currentSong?.play();
+  }
+
+  async vote(value: VoteValue, by: RegisteredUser): Promise<void> {
+    await this.currentSong?.vote(value, by);
   }
 }

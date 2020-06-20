@@ -19,6 +19,7 @@ export class RegisteredUser extends User {
     instance.name = name;
     instance.isActive = true;
     instance.queued = Promise.resolve([]);
+    instance.votes = Promise.resolve([]);
     instance.wantsToListenMusic = false;
     instance.login = login;
     instance.password = password;

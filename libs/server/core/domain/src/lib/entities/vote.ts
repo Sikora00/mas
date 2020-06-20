@@ -26,6 +26,10 @@ export class Vote implements Identifiable<Vote> {
     return this.getId().equals(instance.getId());
   }
 
+  getAddedBy(): RegisteredUser {
+    return this.by;
+  }
+
   getId(): Uuid {
     return Uuid.fromString(this.id);
   }

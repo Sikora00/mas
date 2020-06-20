@@ -24,7 +24,7 @@ export class RadioGuard implements CanActivateChild {
     return this.roomService.rooms$.pipe(
       exhaustMap((savedRooms) => {
         if (savedRooms) {
-          return of(true);
+          return this.roomService.join(selectedRoomId).pipe(map(Boolean));
         } else {
           return this.roomService.getRooms(selectedRoomId).pipe(
             switchMap((rooms) => {
