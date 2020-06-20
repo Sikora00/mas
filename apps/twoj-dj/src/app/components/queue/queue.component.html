@@ -1,0 +1,9 @@
+<ul class="queue">
+  <li class="queued-songs-list__last-element queued-songs-list__song"></li>
+  <li class="queued-songs-list__song" *ngFor="let song of queue">
+    <div class="queued-song" data-test="queued-song">
+      <img class="queued-song__thumbnail" [src]="song.image" />
+      <div class="queued-song__title" [innerHTML]="song.title"></div>
+    </div>
+  </li>
+</ul>

@@ -15,6 +15,8 @@ import {
 export class ActionMenuComponent implements OnInit {
   @Output()
   changeExternalRadioStation = new EventEmitter<void>();
+  @Output()
+  queueSong = new EventEmitter<void>();
 
   constructor() {}
 
@@ -22,5 +24,9 @@ export class ActionMenuComponent implements OnInit {
 
   onChangeExternalRadio(): void {
     this.changeExternalRadioStation.emit();
+  }
+
+  onQueueSong(): void {
+    this.queueSong.emit();
   }
 }

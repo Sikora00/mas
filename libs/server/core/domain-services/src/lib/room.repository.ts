@@ -4,4 +4,6 @@ export abstract class RoomRepository {
   abstract findByIdOrFail(id: Uuid): Promise<Room>;
 
   abstract save(room: Room): Promise<Room>;
+
+  abstract findAll(): Promise<Room[]>;
 }

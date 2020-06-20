@@ -29,9 +29,6 @@
     "api": {
       "tags": []
     },
-    "api-interfaces": {
-      "tags": []
-    },
     "server-core-domain": {
       "tags": ["platform:server", "type:domain"]
     },
@@ -49,6 +46,9 @@
     },
     "cli": {
       "tags": ["platform:server"]
+    },
+    "server-ui-ws": {
+      "tags": ["platform:server", "type:ui"]
     }
   }
 }

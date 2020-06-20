@@ -1,3 +1,10 @@
+import { AggregateRoot } from '@nestjs/cqrs';
+import { CurrentSongChangedEvent } from '../events/current-song-changed.event';
+import { QueueChangedEvent } from '../events/queue-changed.event';
+import { RoomStartsPlayingEvent } from '../events/room-starts-playing.event';
+import { RoomStopsPlayingEvent } from '../events/room-stops-playing.event';
+import { UserJoinedRoomEvent } from '../events/user-joined-room.event';
+import { UserLeavedRoomEvent } from '../events/user-leaved-room.event';
 import { Identifiable } from '../interfaces/identifiable';
 import { Uuid } from '../value-objects/uuid';
 import { Moderator } from './moderator';
@@ -7,7 +14,7 @@ import { RegisteredUser } from './registered-user';
 import { Song } from './song';
 import { User } from './user';
 
-export class Room implements Identifiable<Room> {
+export class Room extends AggregateRoot implements Identifiable<Room> {
   private static readonly startQueueOwnSongs = 50;
 
   private address: string;
@@ -16,10 +23,12 @@ export class Room implements Identifiable<Room> {
   private moderators: Moderator[];
   private name: string;
   private queue: Promise<QueuedSong[]>;
-  private savedFor: RegisteredUser[];
-  private usersInRoom: User[];
+  private savedFor: Promise<RegisteredUser[]>;
+  private usersInRoom: Promise<User[]>;
 
-  private constructor() {}
+  private constructor() {
+    super();
+  }
 
   static create(id: Uuid, name: string, createdBy: RegisteredUser): Room {
     const instance = new Room();
@@ -28,8 +37,8 @@ export class Room implements Identifiable<Room> {
     instance.address = 'http://localhost:3333/stream/' + instance.id;
     instance.moderators = [createdBy.appointModerator()];
     instance.queue = Promise.resolve([]);
-    instance.savedFor = [];
-    instance.usersInRoom = [];
+    instance.savedFor = Promise.resolve([]);
+    instance.usersInRoom = Promise.resolve([]);
     return instance;
   }
 
@@ -40,9 +49,10 @@ export class Room implements Identifiable<Room> {
     }
   }
 
-  async addToQueue(song: Song, addedBy: User): Promise<void> {
+  async addToQueue(song: Song, addedBy?: User): Promise<void> {
     const queuedSong = await QueuedSong.create(song, this, addedBy);
     await this.assignQueueItem(queuedSong);
+    this.apply(new QueueChangedEvent(this.getId()));
   }
 
   async assignQueueItem(queuedSong: QueuedSong): Promise<void> {
@@ -61,11 +71,19 @@ export class Room implements Identifiable<Room> {
   }
 
   getMusicResource(): URL {
-    return new URL(`localhost:3333/stream/channel/${this.id}`);
+    return new URL(`http://localhost:3333/api/room/${this.id}/stream`);
   }
 
   getName(): string {
     return this.name;
+  }
+
+  async getQueue(): Promise<QueuedSong[]> {
+    return (await this.queue).filter((queuedSong) => !queuedSong.getPlayedAt());
+  }
+
+  getUsersInRoom(): Promise<User[]> {
+    return this.usersInRoom;
   }
 
   async goToTheNextSong(): Promise<void> {
@@ -77,17 +95,31 @@ export class Room implements Identifiable<Room> {
     return !!this.currentSong;
   }
 
-  join(user: User): void {
-    if (!this.usersInRoom.find((u) => u.equals(user))) {
-      this.usersInRoom.push(user);
-      user.join(this);
+  async join(user: User): Promise<void> {
+    const usersInRoom = await this.usersInRoom;
+    if (!usersInRoom.find((u) => u.equals(user))) {
+      usersInRoom.push(user);
+      await user.join(this);
+      this.apply(new UserJoinedRoomEvent(user.getId(), this.getId()));
     }
   }
 
-  kickUser(user: User): void {
-    if (this.usersInRoom.find((u) => u.equals(user))) {
-      this.usersInRoom.filter((u) => !u.equals(user));
-      user.kickFromRoom();
+  async kickUser(user: User): Promise<void> {
+    const usersInRoom = await this.usersInRoom;
+    if (usersInRoom.find((u) => u.equals(user))) {
+      usersInRoom.filter((u) => !u.equals(user));
+      await user.kickFromRoom();
+    }
+  }
+
+  async leave(user: User): Promise<void> {
+    const usersInRoom = await this.usersInRoom;
+    if (usersInRoom.find((u) => u.equals(user))) {
+      this.usersInRoom = Promise.resolve(
+        usersInRoom.filter((u) => !u.equals(user))
+      );
+      await user.leave(this);
+      this.apply(new UserLeavedRoomEvent(user.getId(), this.getId()));
     }
   }
 
@@ -97,20 +129,43 @@ export class Room implements Identifiable<Room> {
     }
   }
 
-  saveByUser(user: RegisteredUser): void {
-    if (!this.savedFor.find((u) => u.equals(user))) {
-      this.savedFor.push(user);
-      user.save(this);
+  async saveByUser(user: RegisteredUser): Promise<void> {
+    const savedFor = await this.savedFor;
+    if (!savedFor.find((u) => u.equals(user))) {
+      savedFor.push(user);
+      await user.save(this);
     }
   }
 
-  getCurrentSong(): QueuedSong | null {
+  getCurrentSong(): QueuedSong | undefined {
     return this.currentSong;
   }
 
   async playNextSong(): Promise<void> {
     const queue = (await this.queue).filter((song) => !song.getPlayedAt());
-    this.currentSong = queue.shift();
+    const nextSong = queue.shift() || null;
+    if (!nextSong) {
+      const uniqueSongsIds = [
+        ...new Set(queue.map((item) => item.getSong().getId().toString())),
+      ];
+      if (uniqueSongsIds.length > Room.startQueueOwnSongs) {
+        await this.addToQueue(
+          queue[Math.floor(Math.random() * queue.length)].getSong(),
+          null
+        );
+        await this.playNextSong();
+      } else if (this.isMusicPlaying()) {
+        this.apply(new RoomStopsPlayingEvent(this.getId()));
+        this.apply(new CurrentSongChangedEvent(this.getId()));
+      }
+    } else {
+      if (!this.isMusicPlaying()) {
+        this.apply(new RoomStartsPlayingEvent(this.getId()));
+      }
+      this.apply(new CurrentSongChangedEvent(this.getId()));
+      this.apply(new QueueChangedEvent(this.getId()));
+    }
+    this.currentSong = nextSong;
     this.currentSong?.play();
   }
 }

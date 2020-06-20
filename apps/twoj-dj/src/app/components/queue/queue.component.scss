@@ -1,0 +1,29 @@
+.queue {
+  display: flex;
+  flex-direction: row-reverse;
+}
+.queued-songs-list__song {
+  display: inline-block;
+}
+.queued-song {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 10px 0 10px;
+  max-width: 200px;
+
+  &__thumbnail {
+    border-radius: 50%;
+    font-size: 177px;
+    height: 1em;
+    object-fit: none;
+    width: 1em;
+  }
+
+  &__title {
+    max-width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+}

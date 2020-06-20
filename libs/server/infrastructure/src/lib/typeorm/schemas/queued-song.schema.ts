@@ -20,6 +20,7 @@ export const QueuedSongSchema = new EntitySchema<any>({
       type: 'many-to-one',
       target: 'User',
       inverseSide: 'queued',
+      nullable: true,
     },
     room: {
       lazy: true,

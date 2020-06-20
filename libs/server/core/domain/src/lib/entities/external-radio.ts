@@ -45,7 +45,7 @@ export class ExternalRadio implements Identifiable<ExternalRadio> {
     const selectedBy = await this.selectedBy;
     if (!!selectedBy.find((u) => u.equals(user))) {
       selectedBy.push(user);
-      user.selectExternalRadio(this);
+      await user.selectExternalRadio(this);
     }
   }
 }

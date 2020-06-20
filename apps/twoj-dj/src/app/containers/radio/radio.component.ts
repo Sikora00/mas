@@ -1,13 +1,24 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
-import { filter, first, tap } from 'rxjs/operators';
+import { combineLatest, Subscription } from 'rxjs';
+import { filter, first, switchMap, tap } from 'rxjs/operators';
 import { ExternalRadioSelectionDialogComponent } from '../../components/external-radio-selection-dialog/external-radio-selection-dialog.component';
+import { NoAudioSourceDialogComponent } from '../../components/no-audio-source-dialog/no-audio-source-dialog.component';
+import { QueueSongDialogComponent } from '../../components/queue-song-dialog/queue-song-dialog.component';
 import { ExternalRadio } from '../../models/external-radio.model';
 import { Room } from '../../models/room.model';
+import { Song } from '../../models/song.model';
 import { ExternalRadioService } from '../../services/external-radio.service';
 import { RoomService } from '../../services/room.service';
+import { SongService } from '../../services/song.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'mas-radio',
@@ -15,32 +26,63 @@ import { RoomService } from '../../services/room.service';
   styleUrls: ['./radio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RadioComponent implements OnInit {
-  sidebarOpened = false;
+export class RadioComponent implements OnInit, OnDestroy {
+  @HostListener('window:beforeunload', ['$event'])
+  unloadHandler(): void {
+    this.roomService.leave(this.userService.currentUser.id);
+  }
+
+  audioSrc$ = this.userService.audioSource$;
+  currentSong$ = this.roomService.currentSong$;
+  queue$ = this.roomService.queue$;
   rooms$ = this.roomService.rooms$;
   selectedRoom$ = this.roomService.selectedRoom$;
-  audioSrc$ = of(
-    'http://localhost:3333/api/room/9F7CAD36-B722-4EBF-8345-CF7181659918/stream'
-  );
   selectedExternalRadio$ = this.externalRadioService.selectedExternalRadio$;
+  sidebarOpened = false;
+
+  private externalRadioSub: Subscription;
+  private selectedRoomSub: Subscription;
 
   constructor(
     private dialog: MatDialog,
     private externalRadioService: ExternalRadioService,
     private roomService: RoomService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private songService: SongService,
+    private userService: UserService
   ) {}
 
+  ngOnDestroy(): void {
+    this.externalRadioSub.unsubscribe();
+    this.selectedRoomSub.unsubscribe();
+  }
+
   ngOnInit(): void {
-    const selectedRoomId = this.route.snapshot.paramMap.get('roomId');
-    if (selectedRoomId) {
-      this.roomService
-        .getRooms(selectedRoomId)
-        .pipe(tap(() => this.roomService.select(selectedRoomId)))
-        .subscribe();
-    }
-    this.externalRadioService.getAll();
+    this.externalRadioSub = this.externalRadioService
+      .getAll()
+      .pipe(
+        switchMap((externalRadios) =>
+          this.userService.currentUser$.pipe(
+            tap((user) => {
+              if (user.selectedExternalRadioId) {
+                this.externalRadioService.select(
+                  externalRadios.find(
+                    (radio) => radio.id === user.selectedExternalRadioId
+                  )
+                );
+              }
+            })
+          )
+        )
+      )
+      .subscribe();
+
+    this.selectedRoomSub = this.selectedRoom$
+      .pipe(filter<Room>(Boolean))
+      .subscribe((selectedRoom) =>
+        this.router.navigate(['room', selectedRoom.id], { replaceUrl: true })
+      );
   }
 
   onToggleMenu(): void {
@@ -52,7 +94,7 @@ export class RadioComponent implements OnInit {
   }
 
   onSelectRoom(room: Room): void {
-    this.roomService.select(room.id);
+    this.roomService.join(room.id).subscribe();
   }
 
   onChangeExternalRadio(): void {
@@ -70,5 +112,29 @@ export class RadioComponent implements OnInit {
             this.externalRadioService.select(result);
           });
       });
+  }
+
+  onQueueSong(): void {
+    combineLatest([
+      this.songService
+        .getSongs()
+        .pipe(
+          switchMap((songs) =>
+            this.dialog
+              .open(QueueSongDialogComponent, { data: { songs } })
+              .afterClosed()
+              .pipe(first(), filter(Boolean))
+          )
+        ),
+      this.selectedRoom$,
+    ])
+      .pipe(first())
+      .subscribe(([song, room]: [Song, Room]) =>
+        this.roomService.queueSong(room.id, song.id)
+      );
+  }
+
+  onNoAudioSource(): void {
+    this.dialog.open(NoAudioSourceDialogComponent);
   }
 }

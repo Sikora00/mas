@@ -7,10 +7,40 @@
 .sidenav {
   min-width: 12rem;
 }
+
 .sidenav-container {
   flex: 1;
 }
+
 .app-content {
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.player {
+  flex: 1;
+  min-width: 700px;
+}
+.queue,
+.free-space {
+  flex: 1;
+  max-width: 33.33%;
+  overflow: hidden;
+}
+
+$tablet-width: 768px;
+$desktop-width: 1024px;
+
+@media (max-width: 768px) {
+  .queue,
+  .free-space {
+    display: none;
+  }
+
+  .player {
+    min-width: unset;
+  }
 }

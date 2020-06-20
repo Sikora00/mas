@@ -1,6 +1,4 @@
 import { Subject } from 'rxjs';
-import { ExternalRadio } from '../../models/external-radio.model';
-import { Room } from '../../models/room.model';
 
 import { Framer } from './framer';
 import { Scene } from './scene';
@@ -31,9 +29,7 @@ export class Player {
   private gainNode: GainNode;
   private javascriptNode: ScriptProcessorNode;
   private source: MediaElementAudioSourceNode;
-  private _radio?: ExternalRadio;
   private _src: string;
-  private _room: Room;
 
   constructor(private scene: Scene, private framer: Framer) {}
 

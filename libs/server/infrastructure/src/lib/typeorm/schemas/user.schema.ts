@@ -18,11 +18,13 @@ export const UserSchema = new EntitySchema<any>({
       inverseSide: 'addedBy',
     },
     selectedRoom: {
+      eager: true,
       type: 'many-to-one',
       target: 'Room',
       inverseSide: 'usersInChannel',
     },
     selectedExternalRadio: {
+      eager: true,
       type: 'many-to-one',
       target: 'ExternalRadio',
       inverseSide: 'selectedBy',

@@ -16,7 +16,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@mas/api-interfaces": ["libs/api-interfaces/src/index.ts"],
       "@mas/server/core/domain": ["libs/server/core/domain/src/index.ts"],
       "@mas/server/core/domain-services": [
         "libs/server/core/domain-services/src/index.ts"
@@ -25,7 +24,8 @@
         "libs/server/core/application-services/src/index.ts"
       ],
       "@mas/server/ui-api": ["libs/server/ui-api/src/index.ts"],
-      "@mas/server/infrastructure": ["libs/server/infrastructure/src/index.ts"]
+      "@mas/server/infrastructure": ["libs/server/infrastructure/src/index.ts"],
+      "@mas/server/ui-ws": ["libs/server/ui-ws/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

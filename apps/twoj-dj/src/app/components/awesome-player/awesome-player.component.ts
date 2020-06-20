@@ -1,17 +1,23 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   HostListener,
   Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import { of } from 'rxjs';
 import { delay, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { AudioSource } from '../../models/audio-source';
 import { ExternalRadio } from '../../models/external-radio.model';
 import { Room } from '../../models/room.model';
+import { Song } from '../../models/song.model';
+import { AudioSourceReceivedAction } from '../../payloads/audio-source-received.action';
 import { Framer } from './framer';
 import { Player } from './player';
 import { Scene } from './scene';
@@ -28,27 +34,42 @@ import { Tracker } from './tracker';
 })
 export class AwesomePlayerComponent
   implements OnInit, OnDestroy, AfterViewInit {
-  get src(): string {
-    return this._src;
-  }
-
+  @Input()
+  currentSong: Song;
   @Input()
   externalRadio: ExternalRadio;
 
   @Input()
-  set src(value: string) {
-    this._src = value;
+  set src(value: AudioSourceReceivedAction | null) {
+    if (!value) {
+      return;
+    }
+    this._src = value?.source?.toString();
+    this.sourceType = value.type;
+    if (value.type === AudioSource.None) {
+      setTimeout(() => {
+        this.onPause();
+        this.player.unmute();
+        this.cdR.markForCheck();
+      }, 300);
+      this.player.mute();
+    }
     if (this.player) {
-      this.player.src = value;
+      this.player.src = this._src;
     }
   }
+
   @Input()
   room: Room;
+
+  @Output()
+  noAudioSource = new EventEmitter<void>();
 
   elementSize: number;
   isMuted = false;
   isPlayerLoading$ = of(false);
   isPlaying = false;
+  sourceType: AudioSource;
 
   public player: Player;
   private framer: Framer;
@@ -61,7 +82,10 @@ export class AwesomePlayerComponent
     this.setElementSize();
   }
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {}
+  constructor(
+    private cdR: ChangeDetectorRef,
+    private elementRef: ElementRef<HTMLElement>
+  ) {}
 
   ngOnDestroy(): void {
     this.player.destroy();
@@ -80,13 +104,10 @@ export class AwesomePlayerComponent
     this.scene = new Scene(this.framer, tracker);
     this.setElementSize();
     this.player = new Player(this.scene, this.framer);
-    if (this.room) {
-      this.player.room = this.room;
-    }
     tracker.player = this.player;
 
     this.player.init();
-    this.player.src = this.src;
+    this.player.src = this._src;
     this.isPlayerLoading$ = this.player.isLoadingChange$.pipe(
       distinctUntilChanged(),
       switchMap((value) => of(value).pipe(delay(500)))
@@ -107,8 +128,12 @@ export class AwesomePlayerComponent
   }
 
   onPlay(): void {
-    this.isPlaying = true;
-    this.player.play();
+    if (this.sourceType !== AudioSource.None) {
+      this.isPlaying = true;
+      this.player.play();
+    } else {
+      this.noAudioSource.emit();
+    }
   }
 
   onPause(): void {

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { urlFactory } from '@valueadd/typed-urls';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ExternalRadio } from '../models/external-radio.model';
 
@@ -21,11 +21,10 @@ export class ExternalRadioService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): void {
-    this.http
+  getAll(): Observable<ExternalRadio[]> {
+    return this.http
       .get<ExternalRadio[]>(this.endpoints.getAll.url())
-      .pipe(tap((radios) => this._externalRadios.next(radios)))
-      .subscribe();
+      .pipe(tap((radios) => this._externalRadios.next(radios)));
   }
 
   select(externalRadio: ExternalRadio): void {

@@ -23,7 +23,7 @@ export const ExternalRadioSchema = new EntitySchema<any>({
     selectedBy: {
       lazy: true,
       target: 'User',
-      type: 'many-to-one',
+      type: 'one-to-many',
       inverseSide: 'selectedExternalRadio',
     },
   },

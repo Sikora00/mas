@@ -50,7 +50,7 @@ export class RegisteredUser extends User {
     const savedRooms = await this.savedRooms;
     if (!savedRooms.find((r) => r.equals(room))) {
       savedRooms.push(room);
-      room.saveByUser(this);
+      await room.saveByUser(this);
     }
   }
 }

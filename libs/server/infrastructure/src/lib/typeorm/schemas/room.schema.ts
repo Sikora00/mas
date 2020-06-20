@@ -32,7 +32,7 @@ export const RoomSchema = new EntitySchema<any>({
       inverseSide: 'room',
     },
     savedFor: {
-      eager: true,
+      lazy: true,
       type: 'many-to-many',
       joinTable: {
         joinColumn: { name: 'id' },
@@ -42,7 +42,7 @@ export const RoomSchema = new EntitySchema<any>({
       inverseSide: 'savedRooms',
     },
     usersInRoom: {
-      eager: true,
+      lazy: true,
       type: 'one-to-many',
       target: 'User',
       inverseSide: 'selectedRoom',

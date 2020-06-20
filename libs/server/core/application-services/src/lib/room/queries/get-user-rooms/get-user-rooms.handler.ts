@@ -16,12 +16,18 @@ export class GetUserRoomsHandler implements IQueryHandler<GetUserRoomsQuery> {
 
   async execute(query: GetUserRoomsQuery): Promise<GetUserRoomsReadModel[]> {
     let rooms: Room[] = [];
-    rooms.push(await this.roomRepository.findByIdOrFail(query.roomId));
+    if (query.roomId) {
+      rooms.push(await this.roomRepository.findByIdOrFail(query.roomId));
+    }
     try {
       const savedRooms = await (
         await this.registeredUserRepository.findByIdOrFail(query.userId)
       ).getSavedRooms();
-      rooms = rooms.concat(savedRooms);
+      rooms = rooms.concat(
+        savedRooms.filter((room) =>
+          query.roomId ? !room.getId().equals(rooms[0].getId()) : true
+        )
+      );
     } catch (e) {
       console.error(e);
     }

@@ -19,7 +19,7 @@ export class QueuedSong implements Identifiable<QueuedSong> {
   static async create(
     song: Song,
     room: Room,
-    addedBy: User
+    addedBy?: User
   ): Promise<QueuedSong> {
     const instance = new QueuedSong();
     instance.id = Uuid.random().toString();

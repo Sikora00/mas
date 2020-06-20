@@ -1,10 +1,14 @@
+import { AggregateRoot } from '@nestjs/cqrs';
+import { AudioSourceType } from '../..';
+import { UserChangedPotentialMusicSourceEvent } from '../events/user-changed-potentional-music-source.event';
 import { Identifiable } from '../interfaces/identifiable';
+import { UserMusicResource } from '../value-objects/user-music-resource';
 import { Uuid } from '../value-objects/uuid';
 import { ExternalRadio } from './external-radio';
 import { QueuedSong } from './queued-song';
 import { Room } from './room';
 
-export abstract class User implements Identifiable<User> {
+export abstract class User extends AggregateRoot implements Identifiable<User> {
   protected id: string;
   protected isActive: boolean;
   protected name: string;
@@ -13,8 +17,20 @@ export abstract class User implements Identifiable<User> {
   protected selectedRoom?: Room;
   protected wantsToListenMusic: boolean;
 
-  // @ts-ignore
-  get currentMusicResource(): URL {}
+  get currentMusicResource(): UserMusicResource {
+    if (this.selectedRoom?.isMusicPlaying()) {
+      return {
+        type: AudioSourceType.Room,
+        source: this.selectedRoom.getMusicResource(),
+      };
+    } else if (this.selectedExternalRadio) {
+      return {
+        type: AudioSourceType.Radio,
+        source: this.selectedExternalRadio.getMusicResource(),
+      };
+    }
+    return { type: AudioSourceType.None };
+  }
 
   async addedToQueue(queuedSong: QueuedSong): Promise<void> {
     const queued = await this.queued;
@@ -31,14 +47,33 @@ export abstract class User implements Identifiable<User> {
     return Uuid.fromString(this.id);
   }
 
+  getWantsToListeningMusic(): boolean {
+    return this.wantsToListenMusic;
+  }
+
+  getSelectedExternalRadio(): ExternalRadio | undefined {
+    return this.selectedExternalRadio;
+  }
+
   hasSelectExternalRadio(): boolean {
     return !!this.selectedExternalRadio;
   }
 
-  join(room: Room): void {
+  async join(room: Room): Promise<void> {
     if (!this.selectedRoom?.equals(room)) {
+      if (this.selectedRoom) {
+        await this.leave(this.selectedRoom);
+      }
       this.selectedRoom = room;
-      room.join(this);
+      this.apply(new UserChangedPotentialMusicSourceEvent(this.getId()));
+      await room.join(this);
+    }
+  }
+
+  async leave(room: Room): Promise<void> {
+    if (this.selectedRoom?.equals(room)) {
+      this.selectedRoom = null;
+      await room.leave(this);
     }
   }
 
@@ -46,10 +81,11 @@ export abstract class User implements Identifiable<User> {
     this.wantsToListenMusic = true;
   }
 
-  selectExternalRadio(externalRadio: ExternalRadio): void {
+  async selectExternalRadio(externalRadio: ExternalRadio): Promise<void> {
     if (!this.selectedExternalRadio?.equals(externalRadio)) {
       this.selectedExternalRadio = externalRadio;
-      this.selectedExternalRadio.select(this);
+      await this.selectedExternalRadio.select(this);
+      this.apply(new UserChangedPotentialMusicSourceEvent(this.getId()));
     }
   }
 
@@ -57,9 +93,9 @@ export abstract class User implements Identifiable<User> {
     this.wantsToListenMusic = false;
   }
 
-  kickFromRoom(): void {
+  async kickFromRoom(): Promise<void> {
     const room = this.selectedRoom;
     this.selectedRoom = null;
-    room.kickUser(this);
+    await room.kickUser(this);
   }
 }

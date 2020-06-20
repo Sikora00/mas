@@ -44,12 +44,13 @@ export class LoadSampleDataCommand {
       'Rock',
       user
     );
+    await rockRoom.saveByUser(user);
     const popRoom = Room.create(
       Uuid.fromString('c814add1-b24f-46b9-a372-56c59eefb364'),
       'Pop',
       user
     );
-    popRoom.saveByUser(user);
+    await popRoom.saveByUser(user);
     await this.roomRepository.save(rockRoom);
     await this.roomRepository.save(popRoom);
     const radioZet = ExternalRadio.create(
@@ -71,16 +72,26 @@ export class LoadSampleDataCommand {
 
     const fobSong = Song.create(
       Uuid.fromString('cb096865-51e3-4b3e-b6fb-065d4fc5ea3f'),
-      'FOB'
+      'Fall Out Boy - Irresistible ft. Demi Lovato',
+      new URL('https://img.youtube.com/vi/2Lb2BiUC898/mqdefault.jpg')
     );
-    const anotherSong = Song.create(
+    const megadethSong = Song.create(
       Uuid.fromString('BB3E76CC-8C0D-4E6E-8ED8-880ECEAFDD53'),
-      'Another Song'
+      'Megadeth - Countdown To Extinction',
+      new URL('https://img.youtube.com/vi/-hk1LzKELoo/mqdefault.jpg')
+    );
+    const enriqueSong = Song.create(
+      Uuid.fromString('BB3E76CC-8C0D-4E6E-8ED8-880ECEAFDD54'),
+      "Matoma & Enrique Iglesias – I Don't Dance",
+      new URL('https://img.youtube.com/vi/_D1rrdFcj1U/mqdefault.jpg')
     );
     await this.songRepository.save(fobSong);
-    await this.songRepository.save(anotherSong);
-    await rockRoom.addToQueue(anotherSong, user);
-    await rockRoom.addToQueue(fobSong, user);
-    await this.roomRepository.save(rockRoom);
+    await this.songRepository.save(megadethSong);
+    await this.songRepository.save(enriqueSong);
+
+    await popRoom.addToQueue(enriqueSong, user);
+    await popRoom.addToQueue(megadethSong, user);
+    await popRoom.addToQueue(fobSong, user);
+    await this.roomRepository.save(popRoom);
   }
 }

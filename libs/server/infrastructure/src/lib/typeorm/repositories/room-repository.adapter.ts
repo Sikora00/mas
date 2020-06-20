@@ -11,6 +11,10 @@ export class RoomRepositoryAdapter implements RoomRepository {
     @InjectRepository(RoomSchema) private typeOrmRepository: Repository<Room>
   ) {}
 
+  findAll(): Promise<Room[]> {
+    return this.typeOrmRepository.find();
+  }
+
   findByIdOrFail(id: Uuid): Promise<Room> {
     return this.typeOrmRepository.findOneOrFail(id.toString());
   }

@@ -9,6 +9,12 @@ export const SongSchema = new EntitySchema<any>({
       primary: true,
       type: String,
     },
+    image: {
+      type: String,
+    },
+    title: {
+      type: String,
+    },
   },
   relations: {
     queued: {

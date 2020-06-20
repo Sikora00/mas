@@ -10,6 +10,7 @@ export class Song implements Identifiable<Song> {
   private genre?: Genre;
   private id: string;
   private inPlaylists: Playlist[];
+  private image: string;
   private queued: Promise<QueuedSong[]>;
   private title: string;
   private videoFile: SongFile;
@@ -19,12 +20,13 @@ export class Song implements Identifiable<Song> {
     this.audioFile = SongFile.create(`mp3`, this);
   }
 
-  static create(id: Uuid, title: string, genre?: Genre): Song {
+  static create(id: Uuid, title: string, image: URL, genre?: Genre): Song {
     const instance = new Song();
     instance.addedAt = new Date();
     instance.genre = genre;
     instance.id = id.toString();
     instance.inPlaylists = [];
+    instance.image = image.toString();
     instance.queued = Promise.resolve([]);
     instance.title = title;
     return instance;
@@ -54,6 +56,14 @@ export class Song implements Identifiable<Song> {
 
   getId(): Uuid {
     return Uuid.fromString(this.id);
+  }
+
+  getTitle(): string {
+    return this.title;
+  }
+
+  getImage(): URL {
+    return new URL(this.image);
   }
 }
 

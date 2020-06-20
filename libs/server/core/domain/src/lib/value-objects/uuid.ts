@@ -2,7 +2,7 @@ import { v4 as uuidGen } from 'uuid';
 import { InvalidArgumentException } from '../errors/invalid-argument.exception';
 
 export class Uuid {
-  private uuid: string;
+  private uuid!: string;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}

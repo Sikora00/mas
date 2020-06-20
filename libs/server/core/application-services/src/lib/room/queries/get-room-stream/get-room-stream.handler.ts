@@ -1,7 +1,7 @@
 import { GetRoomStreamReadModel } from '@mas/server/core/application-services';
-import { QueuedSong, Room, Uuid } from '@mas/server/core/domain';
+import { QueuedSong, Uuid } from '@mas/server/core/domain';
 import { RoomRepository } from '@mas/server/core/domain-services';
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { EventPublisher, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'fs';
 import * as mp3Duration from 'mp3-duration';
@@ -17,22 +17,34 @@ export class GetRoomStreamHandler implements IQueryHandler<GetRoomStreamQuery> {
   constructor(
     private roomRepository: RoomRepository,
     @InjectRepository(QueuedSongSchema)
-    private queuedSongRepository: Repository<QueuedSong>
-  ) {}
+    private queuedSongRepository: Repository<QueuedSong>,
+    private publisher: EventPublisher
+  ) {
+    this.roomRepository
+      .findAll()
+      .then((allRooms) =>
+        allRooms.forEach((room) =>
+          this.execute(new GetRoomStreamQuery(room.getId()))
+        )
+      );
+  }
 
   async execute(query: GetRoomStreamQuery): Promise<GetRoomStreamReadModel> {
     if (!this.roomsStreams.get(query.id.toString())) {
-      const room = await this.roomRepository.findByIdOrFail(query.id);
-      this.roomsStreams.set(query.id.toString(), await this.createStream(room));
+      this.roomsStreams.set(
+        query.id.toString(),
+        await this.createStream(query.id)
+      );
     }
     return new GetRoomStreamReadModel(
       this.roomsStreams.get(query.id.toString())
     );
   }
 
-  private async createStream(room: Room): Promise<NodeJS.ReadableStream> {
+  private async createStream(roomId: Uuid): Promise<NodeJS.ReadableStream> {
     const roomStream = new PassThrough();
-    this.handleNextSongs(room.getId(), roomStream);
+    roomStream.once('data', () => {}); // Stream stops without that
+    this.handleNextSongs(roomId, roomStream);
     return roomStream;
   }
 
@@ -40,8 +52,12 @@ export class GetRoomStreamHandler implements IQueryHandler<GetRoomStreamQuery> {
     roomId: Uuid,
     roomStream: Writable
   ): Promise<void> {
-    const room = await this.roomRepository.findByIdOrFail(roomId);
+    const room = this.publisher.mergeObjectContext(
+      await this.roomRepository.findByIdOrFail(roomId)
+    );
     await room.playNextSong();
+    await this.roomRepository.save(room);
+    room.commit();
     const currentSongId = room.getCurrentSong()?.getId().toString();
     let streamPromise;
     if (currentSongId) {
@@ -53,12 +69,8 @@ export class GetRoomStreamHandler implements IQueryHandler<GetRoomStreamQuery> {
         roomStream
       );
     } else {
-      streamPromise = this.streamFile(
-        'assets/songs/10-sec-of-silence.mp3',
-        roomStream
-      );
+      streamPromise = this.streamFile('assets/songs/1sec.mp3', roomStream);
     }
-    await this.roomRepository.save(room);
     await streamPromise;
     this.handleNextSongs(room.getId(), roomStream);
   }
@@ -96,7 +108,7 @@ export class GetRoomStreamHandler implements IQueryHandler<GetRoomStreamQuery> {
     return new Promise((resolve) => {
       const stream = fs.createReadStream(filePath, { start, end });
       stream.pipe(dest, { end: false });
-      stream.on('close', () => {
+      stream.once('end', () => {
         stream.unpipe(dest);
         setTimeout(resolve, delay);
       });
