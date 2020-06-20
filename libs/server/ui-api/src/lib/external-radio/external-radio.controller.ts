@@ -7,6 +7,9 @@ import { GetAllExternalRadiosQuery } from '../../../../core/application-services
 export class ExternalRadioController {
   constructor(private externalRadioService: ExternalRadioService) {}
 
+  /**
+   * A REST API Entry point to the List External Radios Use Case
+   */
   @Get()
   getAll(): Promise<ExternalRadioReadModel[]> {
     return this.externalRadioService.getAllExternalRadios(

@@ -31,6 +31,11 @@ import { ResponseStreamerService } from '../services/response-streamer.service';
 export class RoomController {
   constructor(private roomService: RoomService) {}
 
+  /**
+   * A REST API Entry point to the List Rooms Use Case
+   * @param user
+   * @param id
+   */
   @Get()
   getUserRooms(
     @CurrentUser() user: AuthenticatedUserReadModel,
@@ -41,11 +46,20 @@ export class RoomController {
     );
   }
 
+  /**
+   * A REST API Endpoint to get informations about the room
+   * @param id
+   */
   @Get(':id')
   getRoom(@Param('id') id: string): Promise<GetRoomReadModel> {
     return this.roomService.getRoom(new GetRoomQuery(Uuid.fromString(id)));
   }
 
+  /**
+   * A REST API Entry point to the Join Room Use Case
+   * @param user
+   * @param id
+   */
   @Post(':id/user')
   join(
     @CurrentUser() user: AuthenticatedUserReadModel,
@@ -54,6 +68,11 @@ export class RoomController {
     return this.roomService.join(new JoinCommand(user.id, Uuid.fromString(id)));
   }
 
+  /**
+   * A REST API Entry point to the Leave Room Use Case
+   * @param user
+   * @param id
+   */
   @Delete(':id/user')
   leave(
     @CurrentUser() user: AuthenticatedUserReadModel,
@@ -65,6 +84,11 @@ export class RoomController {
     );
   }
 
+  /**
+   * An entry point to listen music played in the room
+   * @param response
+   * @param id
+   */
   @Get(':id/stream')
   async stream(
     @Res() response: Response,
@@ -77,6 +101,12 @@ export class RoomController {
     responseStreamer.stream(streamResource.stream);
   }
 
+  /**
+   * A REST API Entry point to the QueueSong Use Case
+   * @param user
+   * @param roomId
+   * @param songId
+   */
   @Post(':roomId/song/:songId')
   queueSong(
     @CurrentUser() user: AuthenticatedUserReadModel,

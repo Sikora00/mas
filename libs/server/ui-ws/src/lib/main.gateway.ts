@@ -15,6 +15,11 @@ export class MainGateway {
     private roomService: RoomService
   ) {}
 
+  /**
+   * Configure connection with users using the system
+   * @param client
+   * @param payload
+   */
   @SubscribeMessage('connect')
   async handleConnectUser(
     client: WebSocket,
@@ -28,6 +33,12 @@ export class MainGateway {
     this.sendUserAudioSource(user.getId(), type, source);
   }
 
+  /**
+   * Handles Situation when user leaves the system
+   * Start Leave Room Use Case
+   * @param client
+   * @param payload
+   */
   @SubscribeMessage('leave')
   async leave(
     client: WebSocket,

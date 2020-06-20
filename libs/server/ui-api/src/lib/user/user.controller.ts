@@ -13,6 +13,10 @@ import { CurrentUser } from '../request-decorators/current-user.request-decorato
 export class UserController {
   constructor(private userService: UserService) {}
 
+  /**
+   * A REST API Endpoint to get current user information
+   * @param user
+   */
   @Get('current')
   getCurrentUser(
     @CurrentUser() user: AuthenticatedUserReadModel
@@ -20,6 +24,11 @@ export class UserController {
     return this.userService.getCurrentUser(new GetCurrentUserQuery(user.id));
   }
 
+  /**
+   * A REST API Entry point to the Select External Radio Use Case
+   * @param user
+   * @param id
+   */
   @Put('external-radio/:id')
   selectExternalRadio(
     @CurrentUser() user: AuthenticatedUserReadModel,

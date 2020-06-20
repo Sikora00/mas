@@ -6,6 +6,10 @@ import { RegisteredUserService } from '../../../../core/application-services/src
 export class AuthGuard implements CanActivate {
   constructor(private registeredUserService: RegisteredUserService) {}
 
+  /**
+   * Resolves user currently using the system
+   * @param context
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     context
       .switchToHttp()

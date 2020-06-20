@@ -6,6 +6,9 @@ import { SongService } from '../../../../core/application-services/src/lib/song/
 export class SongController {
   constructor(private songService: SongService) {}
 
+  /**
+   * A REST API Entry point to the List Songs Use Case
+   */
   @Get()
   getAllSongs(): Promise<AllSongsItemReadModel[]> {
     return this.songService.getAllSongs();
