@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
-
-import { Framer } from './framer';
 import { Scene } from './scene';
+
+import { Ticks } from './ticks';
 
 export class Player {
   get src(): string {
@@ -31,7 +31,7 @@ export class Player {
   private source: MediaElementAudioSourceNode;
   private _src: string;
 
-  constructor(private scene: Scene, private framer: Framer) {}
+  constructor(private scene: Scene, private ticks: Ticks) {}
 
   destroy(): void {
     this.audio.remove();
@@ -48,29 +48,25 @@ export class Player {
     if (this.context.suspend) {
       this.context.suspend();
     }
-    try {
-      this.javascriptNode = this.context.createScriptProcessor(2048, 1, 1);
-      this.javascriptNode.connect(this.context.destination);
-      this.analyser = this.context.createAnalyser();
-      this.analyser.connect(this.javascriptNode);
-      this.analyser.smoothingTimeConstant = 0.6;
-      this.analyser.fftSize = 2048;
-      this.audio = <HTMLAudioElement>document.getElementById('playerHtmlAudio');
-      this.audio.crossOrigin = 'anonymous';
-      this.audio.addEventListener('ended', this.replayStream.bind(this));
-      this.audio.addEventListener('error', this.replayStream.bind(this));
-      this.source = this.context.createMediaElementSource(this.audio);
-      this.destination = this.context.destination;
+    this.javascriptNode = this.context.createScriptProcessor(2048, 1, 1);
+    this.javascriptNode.connect(this.context.destination);
+    this.analyser = this.context.createAnalyser();
+    this.analyser.connect(this.javascriptNode);
+    this.analyser.smoothingTimeConstant = 0.6;
+    this.analyser.fftSize = 2048;
+    this.audio = <HTMLAudioElement>document.getElementById('playerHtmlAudio');
+    this.audio.crossOrigin = 'anonymous';
+    this.audio.addEventListener('ended', this.replayStream.bind(this));
+    this.audio.addEventListener('error', this.replayStream.bind(this));
+    this.source = this.context.createMediaElementSource(this.audio);
+    this.destination = this.context.destination;
 
-      this.gainNode = this.context.createGain();
-      this.source.connect(this.gainNode);
-      this.gainNode.connect(this.analyser);
-      this.gainNode.connect(this.destination);
+    this.gainNode = this.context.createGain();
+    this.source.connect(this.gainNode);
+    this.gainNode.connect(this.analyser);
+    this.gainNode.connect(this.destination);
 
-      this.initHandlers();
-    } finally {
-      this.framer.setLoadingPercent(1);
-    }
+    this.initHandlers();
     this.scene.init();
   }
 
@@ -117,10 +113,10 @@ export class Player {
     // ToDo onaudioprocess is deprecated
     // tslint:disable-next-line
     this.javascriptNode.onaudioprocess = () => {
-      this.framer.frequencyData = new Uint8Array(
+      this.ticks.frequencyData = new Uint8Array(
         this.analyser.frequencyBinCount
       );
-      this.analyser.getByteFrequencyData(this.framer.frequencyData);
+      this.analyser.getByteFrequencyData(this.ticks.frequencyData);
     };
   }
 

@@ -18,10 +18,10 @@ import { ExternalRadio } from '../../models/external-radio.model';
 import { Room } from '../../models/room.model';
 import { Song } from '../../models/song.model';
 import { AudioSourceReceivedAction } from '../../payloads/audio-source-received.action';
-import { Framer } from './framer';
+import { Ticks } from './ticks';
 import { Player } from './player';
 import { Scene } from './scene';
-import { Tracker } from './tracker';
+import { Circle } from './circle';
 
 @Component({
   selector: 'sdj-awesome-player',
@@ -72,7 +72,7 @@ export class AwesomePlayerComponent
   sourceType: AudioSource;
 
   public player: Player;
-  private framer: Framer;
+  private framer: Ticks;
 
   private scene: Scene;
   private _src: string;
@@ -97,14 +97,13 @@ export class AwesomePlayerComponent
   }
 
   async ngAfterViewInit(): Promise<void> {
-    this.framer = new Framer();
-    const tracker = new Tracker();
-    this.framer.tracker = tracker;
+    this.framer = new Ticks();
+    const circle = new Circle();
+    this.framer.circle = circle;
 
-    this.scene = new Scene(this.framer, tracker);
+    this.scene = new Scene(this.framer, circle);
     this.setElementSize();
     this.player = new Player(this.scene, this.framer);
-    tracker.player = this.player;
 
     this.player.init();
     this.player.src = this._src;
