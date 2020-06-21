@@ -14,20 +14,9 @@ export class Circle {
   }
 
   draw(): void {
-    this.drawArc();
     this.drawEdging();
   }
 
-  drawArc(): void {
-    this.context.save();
-    this.context.strokeStyle = 'rgba(254, 67, 101, 0.8)';
-    this.context.beginPath();
-    this.context.lineWidth = this.lineWidth;
-
-    this.r = this.scene.radius - (this.innerDelta + this.lineWidth / 2);
-    this.context.stroke();
-    this.context.restore();
-  }
 
   drawEdging(): void {
     this.context.save();

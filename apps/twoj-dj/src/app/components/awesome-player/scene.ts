@@ -75,6 +75,7 @@ export class Scene {
 
   draw(): void {
     this.ticks.draw();
+    this.circle.draw();
   }
 
   startRender(): void {
